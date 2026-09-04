@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全渠道库存中心 - 手工指派</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            white-space: nowrap;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #001529;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .sidebar-logo {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: left;
+            border-bottom: 1px solid #002140;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding-top: 20px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            position: relative;
+        }
+
+        .menu-item:hover {
+            background-color: #002140;
+        }
+
+        .menu-item.active {
+            background-color: #002140;
+        }
+
+        .menu-item .arrow {
+            margin-left: auto;
+        }
+
+        .submenu {
+            position: absolute;
+            left: 200px;
+            top: 130px;
+            background-color: #001529;
+            border-radius: 4px;
+            min-width: 380px;
+            display: none;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .submenu-group h4 {
+            color: #fff;
+            font-size: 14px;
+            padding: 0 0 8px 0;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            opacity: 0.7;
+        }
+
+        .submenu-item {
+            padding: 8px 10px;
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .submenu-item:hover {
+            background-color: #002140;
+        }
+
+        .submenu-item.active {
+            background-color: #1890ff;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .top-nav {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 0 20px;
+            height: 60px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #673ab7;
+            border-radius: 6px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-right: 20px;
+        }
+
+        .nav-actions span {
+            font-size: 18px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding: 0 10px;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            height: 50px;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .corner-tag {
+            position: absolute;
+            top: 0;
+            left: 380px;
+            background-color: green;
+            color: white;
+            padding: 4px 16px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 100%);
+        }
+
+        .top-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            font-size: 16px;
+        }
+
+        .top-right a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .top-right a:last-child {
+            color: #2196f3;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .tab-item {
+            padding: 12px 20px;
+            font-size: 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-item.active {
+            background-color: white;
+            border-bottom: 2px solid #2196f3;
+            color: #2196f3;
+        }
+
+        .tab-item .close {
+            margin-left: 8px;
+            color: #999;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        /* 选中操作栏 */
+        .selection-bar {
+            display: none;
+            align-items: center;
+            gap: 20px;
+            font-size: 16px;
+            position: absolute;
+            left: 0;
+        }
+
+        .selection-bar.show {
+            display: flex;
+        }
+
+        .selection-bar .close-selection {
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+            margin-right: 4px;
+        }
+
+        .selection-bar .close-selection:hover {
+            color: #333;
+        }
+
+        .selection-bar .selected-count {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .selection-bar .action-link {
+            color: #2196f3;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .selection-bar .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .search-area {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .search-area label {
+            font-size: 15px;
+            margin-right: 8px;
+        }
+
+        .search-area input {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 15px;
+            width: 220px;
+            height: 40px;
+        }
+
+        .search-area select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 15px;
+            width: 140px;
+            height: 40px;
+            background-color: #fff;
+        }
+
+        .btn {
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #2196f3;
+            color: white;
+        }
+
+        .btn-default {
+            background-color: white;
+            border: 1px solid #d9d9d9;
+            color: #333;
+        }
+
+        .search-buttons {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-btn-area {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+            min-height: 40px;
+            position: relative;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        table th {
+            background-color: #fafafa;
+            font-weight: 500;
+            position: relative;
+        }
+
+        table th .resize-handle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 5px;
+            height: 100%;
+            cursor: col-resize;
+            user-select: none;
+        }
+
+        table th .resize-handle:hover,
+        table th .resize-handle.active {
+            background-color: #2196f3;
+        }
+
+        table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        table tbody tr:hover {
+            background-color: #f0f7ff;
+        }
+
+        table tbody tr.selected {
+            background-color: #e6f4ff;
+        }
+
+        .code-link {
+            color: #2196f3;
+            text-decoration: none;
+        }
+
+        .status-tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-enabled {
+            color: #52c41a;
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+        }
+
+        .status-disabled {
+            color: #f5222d;
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+        }
+
+        .type-tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .type-shop {
+            color: #1890ff;
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+        }
+
+        .type-order {
+            color: #722ed1;
+            background-color: #f9f0ff;
+            border: 1px solid #d3adf7;
+        }
+
+        .edit-link {
+            color: #2196f3;
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 12px 0;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .pagination select {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+
+        .page-number {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #2196f3;
+            color: #2196f3;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .page-number:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .float-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e6f7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2196f3;
+            font-size: 20px;
+        }
+
+        /* 弹窗遮罩 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background-color: #fff;
+            border-radius: 12px;
+            width: 960px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+            animation: slideUp 0.25s ease;
+        }
+
+        .modal::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal::-webkit-scrollbar-thumb {
+            background-color: #d9d9d9;
+            border-radius: 3px;
+        }
+
+        .modal::-webkit-scrollbar-thumb:hover {
+            background-color: #bbb;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+            border-radius: 12px 12px 0 0;
+            position: relative;
+        }
+
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #2196f3, #1565c0);
+            border-radius: 12px 0 0 0;
+        }
+
+        .modal-header .modal-close {
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            line-height: 1;
+        }
+
+        .modal-header .modal-close:hover {
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .modal-body {
+            padding: 24px 28px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 28px;
+            border-top: 1px solid #f0f0f0;
+            background-color: #fafbfc;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .modal-footer .btn {
+            padding: 10px 32px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            border: none;
+            box-shadow: 0 2px 8px rgba(33,150,243,0.3);
+        }
+
+        .modal-footer .btn-primary:hover {
+            box-shadow: 0 4px 12px rgba(33,150,243,0.4);
+            transform: translateY(-1px);
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+            background-color: #fafbfc;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f0fe;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: #2196f3;
+            border-radius: 2px;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        .form-row label {
+            font-size: 14px;
+            min-width: 90px;
+            text-align: right;
+            color: #555;
+        }
+
+        .form-row input,
+        .form-row select {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            height: 38px;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        .form-row input:focus,
+        .form-row select:focus {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33,150,243,0.1);
+        }
+
+        .form-row input[type="text"] {
+            width: 260px;
+        }
+
+        .form-row input[type="datetime-local"] {
+            width: 220px;
+        }
+
+        .form-row select {
+            width: 160px;
+            background-color: #fff;
+        }
+
+        /* 条件类型切换 */
+        .condition-type-switch {
+            display: flex;
+            gap: 0;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #f5f5f5;
+        }
+
+        .condition-type-switch .ct-tab {
+            padding: 8px 18px;
+            font-size: 13px;
+            background-color: transparent;
+            border: none;
+            border-right: 1px solid #e8e8e8;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .condition-type-switch .ct-tab:last-child {
+            border-right: none;
+        }
+
+        .condition-type-switch .ct-tab:hover {
+            color: #2196f3;
+            background-color: #e8f4fd;
+        }
+
+        .condition-type-switch .ct-tab.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            box-shadow: 0 1px 4px rgba(33,150,243,0.3);
+        }
+
+        .condition-panel {
+            display: none;
+            padding: 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            background-color: #fff;
+            margin-top: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        .condition-panel.active {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .condition-panel .form-row {
+            margin-bottom: 10px;
+        }
+
+        .condition-panel .form-row label {
+            min-width: 100px;
+        }
+
+        .add-condition-btn {
+            font-size: 13px;
+            color: #2196f3;
+            cursor: pointer;
+            background: none;
+            border: 1px dashed #2196f3;
+            border-radius: 6px;
+            padding: 8px 20px;
+            margin-top: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .add-condition-btn:hover {
+            background-color: #e6f7ff;
+            box-shadow: 0 1px 4px rgba(33,150,243,0.15);
+        }
+
+        .condition-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 12px 14px;
+            background-color: #fafbfc;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+        .condition-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .condition-item label {
+            font-size: 13px;
+            min-width: 70px;
+            text-align: right;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .condition-item input,
+        .condition-item select {
+            padding: 7px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            height: 34px;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        .condition-item input:focus,
+        .condition-item select:focus {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33,150,243,0.1);
+        }
+
+        .condition-item .remove-condition {
+            color: #f5222d;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 4px;
+            background: none;
+            border: none;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .condition-item .remove-condition:hover {
+            background-color: #fff1f0;
+        }
+
+        /* 机构配置 */
+        .org-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 10px;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .org-table th,
+        .org-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .org-table th {
+            background: linear-gradient(135deg, #f8faff 0%, #f0f4fa 100%);
+            font-weight: 600;
+            color: #444;
+            font-size: 13px;
+            border-bottom: 1px solid #e0e6ef;
+        }
+
+        .org-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .org-table tr:hover td {
+            background-color: #f8fbff;
+        }
+
+        .org-table input,
+        .org-table select {
+            padding: 7px 10px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 13px;
+            height: 34px;
+            outline: none;
+            width: 100%;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+
+        .org-table input:focus,
+        .org-table select:focus {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 2px rgba(33,150,243,0.1);
+        }
+
+        .org-table .remove-org {
+            color: #f5222d;
+            cursor: pointer;
+            font-size: 16px;
+            background: none;
+            border: none;
+            transition: all 0.2s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .org-table .remove-org:hover {
+            background-color: #fff1f0;
+        }
+
+        .add-org-btn {
+            font-size: 13px;
+            color: #2196f3;
+            cursor: pointer;
+            background: none;
+            border: 1px dashed #2196f3;
+            border-radius: 6px;
+            padding: 8px 20px;
+            margin-top: 12px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .add-org-btn:hover {
+            background-color: #e6f7ff;
+            box-shadow: 0 1px 4px rgba(33,150,243,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="sidebar">
+            <div class="sidebar-logo">TOP SPORTS</div>
+            <div class="sidebar-menu">
+                <div class="menu-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>库存管理</span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="menu-item active" id="orderManage">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>派单管理</span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="menu-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>报表管理</span>
+                    <span class="arrow">></span>
+                </div>
+                <div class="menu-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>系统管理</span>
+                    <span class="arrow">></span>
+                </div>
+            </div>
+
+            <div class="submenu" id="submenu">
+                <div class="submenu-group">
+                    <h4>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        派单因子
+                    </h4>
+                    <div class="submenu-item">聚合仓省属优先</div>
+                    <div class="submenu-item">聚合仓货管优先</div>
+                    <div class="submenu-item">门店信用分</div>
+                    <div class="submenu-item">是否允许跨结算</div>
+                </div>
+                <div class="submenu-group">
+                    <h4>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        派单策略
+                    </h4>
+                    <div class="submenu-item">虚店配货规则</div>
+                    <div class="submenu-item">虚店派单规则</div>
+                    <div class="submenu-item">实店派单规则</div>
+                    <div class="submenu-item">派单运筹规则</div>
+                    <div class="submenu-item active">手工指派</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="top-nav">
+                <div class="logo">
+                    <div class="logo-icon">全</div>
+                    全渠道库存中心
+                </div>
+                <div class="nav-actions">
+                    <span>?</span>
+                    <span>🔍</span>
+                </div>
+                <div class="search-bar">
+                    <input type="text" value="手工指派" readonly>
+                </div>
+                <div class="corner-tag">生产</div>
+                <div class="top-right">
+                    <span>你好！周翠 欢迎进入！</span>
+                    <a href="#">修改密码</a>
+                    <a href="#">退出</a>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab-item">工作台</div>
+                <div class="tab-item active">
+                    手工指派
+                    <span>⟳</span>
+                    <span class="close">×</span>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="search-area">
+                    <div>
+                        <label>规则名称</label>
+                        <input type="text" placeholder="请输入规则名称" id="searchName">
+                    </div>
+                    <div>
+                        <label>条件类型</label>
+                        <select id="searchCondition">
+                            <option value="">全部</option>
+                            <option value="渠道+商品">渠道+商品</option>
+                            <option value="渠道+品牌">渠道+品牌</option>
+                            <option value="商品">商品</option>
+                            <option value="品牌">品牌</option>
+                            <option value="销售订单">销售订单</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>目标类型</label>
+                        <select id="searchTarget">
+                            <option value="">全部</option>
+                            <option value="机构">机构</option>
+                            <option value="货管">货管</option>
+                            <option value="城市">城市</option>
+                            <option value="虚仓">虚仓</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>状态</label>
+                        <select id="searchStatus">
+                            <option value="">全部</option>
+                            <option value="启用">启用</option>
+                            <option value="禁用">禁用</option>
+                        </select>
+                    </div>
+                    <div class="search-buttons">
+                        <button class="btn btn-primary" onclick="filterTable()">查询</button>
+                        <button class="btn btn-default" onclick="resetFilter()">清空</button>
+                    </div>
+                </div>
+
+                <div class="add-btn-area">
+                    <div class="selection-bar" id="selectionBar">
+                        <span class="close-selection" onclick="clearSelection()">✕</span>
+                        <span class="selected-count">已选<span id="selectedCount">1</span>项</span>
+                        <a class="action-link" onclick="doEnable()">启用</a>
+                        <a class="action-link" onclick="doDisable()">禁用</a>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModal()">新增</button>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>规则编码</th>
+                                <th>规则名称</th>
+                                <th>生效时间段</th>
+                                <th>状态</th>
+                                <th>条件类型</th>
+                                <th>目标类型</th>
+                                <th>创建人</th>
+                                <th>创建时间</th>
+                                <th>修改人</th>
+                                <th>修改时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <span>共 <span id="pageTotal">8</span> 条数据</span>
+                    <span style="cursor:pointer;">&lt;</span>
+                    <div class="page-number">1</div>
+                    <span style="cursor:pointer;">&gt;</span>
+                    <select>
+                        <option>20 条/页</option>
+                        <option>50 条/页</option>
+                        <option>100 条/页</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="float-btn">💬</div>
+
+    <!-- 新增规则弹窗 -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span>新增手工指派规则</span>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- 基本信息 -->
+                <div class="form-section">
+                    <div class="form-section-title">基本信息</div>
+                    <div class="form-row">
+                        <label>规则名称</label>
+                        <input type="text" id="modalRuleName" placeholder="请输入规则名称">
+                    </div>
+                    <div class="form-row">
+                        <label>生效开始时间</label>
+                        <input type="datetime-local" step="1" id="modalStartTime">
+                        <label>生效结束时间</label>
+                        <input type="datetime-local" step="1" id="modalEndTime">
+                    </div>
+                </div>
+
+                <!-- 派单干预条件 -->
+                <div class="form-section">
+                    <div class="form-section-title">派单干预条件</div>
+                    <!-- 条件类型切换 -->
+                    <div class="form-row">
+                        <label>条件类型</label>
+                        <div class="condition-type-switch">
+                            <button type="button" class="ct-tab active" data-type="channelProduct" onclick="switchConditionType(this)">渠道+商品</button>
+                            <button type="button" class="ct-tab" data-type="channelBrand" onclick="switchConditionType(this)">渠道+品牌</button>
+                            <button type="button" class="ct-tab" data-type="product" onclick="switchConditionType(this)">商品</button>
+                            <button type="button" class="ct-tab" data-type="brand" onclick="switchConditionType(this)">品牌</button>
+                            <button type="button" class="ct-tab" data-type="order" onclick="switchConditionType(this)">销售订单</button>
+                        </div>
+                    </div>
+
+                    <!-- 渠道+商品 -->
+                    <div class="condition-panel active" id="conditionChannelProduct">
+                        <div id="channelProductList">
+                            <div class="condition-item">
+                                <label>三级来源</label>
+                                <select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>
+                                <label>商品编码</label>
+                                <input type="text" placeholder="请输入商品编码" style="width:180px;">
+                                <button class="remove-condition" onclick="removeCondition(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-condition-btn" onclick="addChannelProductCondition()">+ 添加条件</button>
+                    </div>
+
+                    <!-- 渠道+品牌 -->
+                    <div class="condition-panel" id="conditionChannelBrand">
+                        <div id="channelBrandList">
+                            <div class="condition-item">
+                                <label>渠道</label>
+                                <select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>
+                                <label>品牌</label>
+                                <select><option>耐克</option><option>阿迪达斯</option><option>李宁</option><option>安踏</option><option>新百伦</option></select>
+                                <button class="remove-condition" onclick="removeCondition(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-condition-btn" onclick="addChannelBrandCondition()">+ 添加条件</button>
+                    </div>
+
+                    <!-- 商品 -->
+                    <div class="condition-panel" id="conditionProduct">
+                        <div id="productList">
+                            <div class="condition-item">
+                                <label>商品编码</label>
+                                <input type="text" placeholder="请输入商品编码" style="width:220px;">
+                                <button class="remove-condition" onclick="removeCondition(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-condition-btn" onclick="addProductCondition()">+ 添加条件</button>
+                    </div>
+
+                    <!-- 品牌 -->
+                    <div class="condition-panel" id="conditionBrand">
+                        <div id="brandList">
+                            <div class="condition-item">
+                                <label>品牌</label>
+                                <select><option>耐克</option><option>阿迪达斯</option><option>李宁</option><option>安踏</option><option>新百伦</option></select>
+                                <button class="remove-condition" onclick="removeCondition(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-condition-btn" onclick="addBrandCondition()">+ 添加条件</button>
+                    </div>
+
+                    <!-- 销售订单 -->
+                    <div class="condition-panel" id="conditionOrder">
+                        <div id="orderConditionList">
+                            <div class="condition-item">
+                                <label>平台</label>
+                                <select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>
+                                <label>订单编码</label>
+                                <input type="text" placeholder="请输入平台订单编码" style="width:220px;">
+                                <button class="remove-condition" onclick="removeCondition(this)">✕</button>
+                            </div>
+                        </div>
+                        <button class="add-condition-btn" onclick="addOrderCondition()">+ 添加条件</button>
+                    </div>
+                </div>
+
+                <!-- 定向派单 -->
+                <div class="form-section">
+                    <div class="form-section-title">定向派单（可配置优先级）</div>
+                    <div class="form-row">
+                        <label>派单对象</label>
+                        <div class="condition-type-switch">
+                            <button type="button" class="ct-tab active" data-target="orgPanel" onclick="switchOrgType(this)">机构</button>
+                            <button type="button" class="ct-tab" data-target="hgPanel" onclick="switchOrgType(this)">货管</button>
+                            <button type="button" class="ct-tab" data-target="cityPanel" onclick="switchOrgType(this)">城市</button>
+                            <button type="button" class="ct-tab" data-target="vwPanel" onclick="switchOrgType(this)">虚仓</button>
+                        </div>
+                    </div>
+
+                    <!-- 机构 -->
+                    <div class="condition-panel active" id="orgPanel">
+                        <table class="org-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">序号</th>
+                                    <th>机构编码</th>
+                                    <th>机构名称</th>
+                                    <th style="width:120px;">优先级</th>
+                                    <th style="width:60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orgTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" placeholder="请输入机构编码"></td>
+                                    <td><input type="text" placeholder="请输入机构名称"></td>
+                                    <td>
+                                        <select>
+                                            <option value="1">1（最高）</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="remove-org" onclick="removeOrg(this)">✕</button></td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td><input type="text" placeholder="请输入机构编码"></td>
+                                    <td><input type="text" placeholder="请输入机构名称"></td>
+                                    <td>
+                                        <select>
+                                            <option value="1">1（最高）</option>
+                                            <option value="2" selected>2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="remove-org" onclick="removeOrg(this)">✕</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="add-org-btn" onclick="addOrg()">+ 添加机构</button>
+                    </div>
+
+                    <!-- 货管 -->
+                    <div class="condition-panel" id="hgPanel">
+                        <table class="org-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">序号</th>
+                                    <th>货管编码</th>
+                                    <th>货管名称</th>
+                                    <th style="width:120px;">优先级</th>
+                                    <th style="width:60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hgTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" placeholder="请输入货管编码"></td>
+                                    <td><input type="text" placeholder="请输入货管名称"></td>
+                                    <td>
+                                        <select>
+                                            <option value="1">1（最高）</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="remove-hg" onclick="removeHg(this)">✕</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="add-org-btn" onclick="addHg()">+ 添加货管</button>
+                    </div>
+
+                    <!-- 城市 -->
+                    <div class="condition-panel" id="cityPanel">
+                        <table class="org-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">序号</th>
+                                    <th>城市名称</th>
+                                    <th style="width:120px;">优先级</th>
+                                    <th style="width:60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cityTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" placeholder="请输入城市名称"></td>
+                                    <td>
+                                        <select>
+                                            <option value="1">1（最高）</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="remove-city" onclick="removeCity(this)">✕</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="add-org-btn" onclick="addCity()">+ 添加城市</button>
+                    </div>
+
+                    <!-- 虚仓 -->
+                    <div class="condition-panel" id="vwPanel">
+                        <table class="org-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">序号</th>
+                                    <th>虚仓编码</th>
+                                    <th>虚仓名称</th>
+                                    <th style="width:120px;">优先级</th>
+                                    <th style="width:60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vwTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td><input type="text" placeholder="请输入虚仓编码"></td>
+                                    <td><input type="text" placeholder="请输入虚仓名称"></td>
+                                    <td>
+                                        <select>
+                                            <option value="1">1（最高）</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="remove-vw" onclick="removeVw(this)">✕</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="add-org-btn" onclick="addVw()">+ 添加虚仓</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveRule()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ruleData = [
+            {
+                code: 'SZ202609020001',
+                name: '得物',
+                startTime: '2026-09-02 10:17:15',
+                endTime: '2030-08-31 23:59:59',
+                status: '启用',
+                condition: '渠道+商品',
+                target: '机构',
+                creator: 'zhou.c',
+                createTime: '2026-09-02 10:17:15',
+                modifier: 'zhou.c',
+                modifyTime: '2026-09-02 10:17:15'
+            },
+            {
+                code: 'SZ202608240003',
+                name: '天猫其他小店',
+                startTime: '2026-08-31 10:00:00',
+                endTime: '2030-08-31 23:59:59',
+                status: '启用',
+                condition: '渠道+品牌',
+                target: '货管',
+                creator: 'li.m',
+                createTime: '2026-08-24 14:30:00',
+                modifier: 'li.m',
+                modifyTime: '2026-08-31 10:00:00'
+            },
+            {
+                code: 'SZ202608240002',
+                name: '京东其他小店',
+                startTime: '2026-08-31 10:00:00',
+                endTime: '2029-09-30 23:59:59',
+                status: '禁用',
+                condition: '商品',
+                target: '城市',
+                creator: 'wang.j',
+                createTime: '2026-08-24 14:00:00',
+                modifier: 'wang.j',
+                modifyTime: '2026-08-31 10:00:00'
+            },
+            {
+                code: 'SZ202608200001',
+                name: '抖音旗舰店手工指派规则',
+                startTime: '2026-08-20 00:00:00',
+                endTime: '2026-12-31 23:59:59',
+                status: '启用',
+                condition: '渠道+商品',
+                target: '虚仓',
+                creator: 'chen.x',
+                createTime: '2026-08-20 11:20:00',
+                modifier: 'chen.x',
+                modifyTime: '2026-08-28 09:10:00'
+            },
+            {
+                code: 'SZ202608150001',
+                name: '拼多多大促订单指派',
+                startTime: '2026-08-15 00:00:00',
+                endTime: '2026-09-15 23:59:59',
+                status: '启用',
+                condition: '销售订单',
+                target: '机构',
+                creator: 'liu.y',
+                createTime: '2026-08-15 14:30:00',
+                modifier: 'liu.y',
+                modifyTime: '2026-08-16 10:00:00'
+            },
+            {
+                code: 'SZ202608100001',
+                name: '小红书种草活动订单指派',
+                startTime: '2026-08-10 00:00:00',
+                endTime: '2026-08-31 23:59:59',
+                status: '禁用',
+                condition: '销售订单',
+                target: '货管',
+                creator: 'zhao.h',
+                createTime: '2026-08-10 09:00:00',
+                modifier: 'zhao.h',
+                modifyTime: '2026-08-31 17:30:00'
+            },
+            {
+                code: 'SZ202608050001',
+                name: '唯品会特卖订单指派规则',
+                startTime: '2026-08-05 00:00:00',
+                endTime: '2026-09-05 23:59:59',
+                status: '启用',
+                condition: '渠道+品牌',
+                target: '城市',
+                creator: 'sun.q',
+                createTime: '2026-08-05 13:45:00',
+                modifier: 'sun.q',
+                modifyTime: '2026-08-05 13:45:00'
+            },
+            {
+                code: 'SZ202608010001',
+                name: '快手直播间订单优先派单',
+                startTime: '2026-08-01 00:00:00',
+                endTime: '2026-09-30 23:59:59',
+                status: '启用',
+                condition: '商品',
+                target: '虚仓',
+                creator: 'sun.q',
+                createTime: '2026-08-01 08:30:00',
+                modifier: 'sun.q',
+                modifyTime: '2026-08-15 11:20:00'
+            }
+        ];
+
+        let currentData = [];
+        let selectedIndex = -1;
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            currentData = data;
+            const conditionColors = {
+                '渠道+商品': 'type-shop',
+                '渠道+品牌': 'type-order',
+                '商品': 'type-shop',
+                '销售订单': 'type-order'
+            };
+            const targetColors = {
+                '机构': 'type-shop',
+                '货管': 'type-order',
+                '城市': 'type-shop',
+                '虚仓': 'type-order'
+            };
+            data.forEach(function(row, index) {
+                const tr = document.createElement('tr');
+                const statusClass = row.status === '启用' ? 'status-enabled' : 'status-disabled';
+                const condClass = conditionColors[row.condition] || 'type-shop';
+                const tgtClass = targetColors[row.target] || 'type-shop';
+                tr.setAttribute('data-index', index);
+                tr.onclick = function() { selectRow(this, index); };
+                tr.innerHTML = '<td>' + (index + 1) + '</td>' +
+                    '<td><a href="#" class="code-link" onclick="event.stopPropagation()">' + row.code + '</a></td>' +
+                    '<td>' + row.name + '</td>' +
+                    '<td>' + row.startTime + ' ~ ' + row.endTime + '</td>' +
+                    '<td><span class="status-tag ' + statusClass + '">' + row.status + '</span></td>' +
+                    '<td><span class="type-tag ' + condClass + '">' + row.condition + '</span></td>' +
+                    '<td><span class="type-tag ' + tgtClass + '">' + row.target + '</span></td>' +
+                    '<td>' + row.creator + '</td>' +
+                    '<td>' + row.createTime + '</td>' +
+                    '<td>' + row.modifier + '</td>' +
+                    '<td>' + row.modifyTime + '</td>';
+                tbody.appendChild(tr);
+            });
+            document.getElementById('pageTotal').textContent = data.length;
+        }
+
+        function selectRow(tr, index) {
+            // 取消之前的选中
+            document.querySelectorAll('#tableBody tr.selected').forEach(function(r) {
+                r.classList.remove('selected');
+            });
+
+            if (selectedIndex === index) {
+                // 再次点击同一行，取消选中
+                selectedIndex = -1;
+                document.getElementById('selectionBar').classList.remove('show');
+            } else {
+                selectedIndex = index;
+                tr.classList.add('selected');
+                document.getElementById('selectedCount').textContent = '1';
+                document.getElementById('selectionBar').classList.add('show');
+            }
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('#tableBody tr.selected').forEach(function(r) {
+                r.classList.remove('selected');
+            });
+            selectedIndex = -1;
+            document.getElementById('selectionBar').classList.remove('show');
+        }
+
+        function doEnable() {
+            if (selectedIndex >= 0 && currentData[selectedIndex]) {
+                currentData[selectedIndex].status = '启用';
+                renderTable(currentData);
+            }
+        }
+
+        function doDisable() {
+            if (selectedIndex >= 0 && currentData[selectedIndex]) {
+                currentData[selectedIndex].status = '禁用';
+                renderTable(currentData);
+            }
+        }
+
+        function filterTable() {
+            const name = document.getElementById('searchName').value.trim().toLowerCase();
+            const condition = document.getElementById('searchCondition').value;
+            const target = document.getElementById('searchTarget').value;
+            const status = document.getElementById('searchStatus').value;
+
+            const filtered = ruleData.filter(function(row) {
+                const nameMatch = !name || row.name.toLowerCase().includes(name);
+                const conditionMatch = !condition || row.condition === condition;
+                const targetMatch = !target || row.target === target;
+                const statusMatch = !status || row.status === status;
+                return nameMatch && conditionMatch && targetMatch && statusMatch;
+            });
+
+            clearSelection();
+            renderTable(filtered);
+        }
+
+        function resetFilter() {
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchCondition').value = '';
+            document.getElementById('searchTarget').value = '';
+            document.getElementById('searchStatus').value = '';
+            clearSelection();
+            renderTable(ruleData);
+        }
+
+        (function() {
+            renderTable(ruleData);
+        })();
+
+        // 子菜单
+        var orderManage = document.getElementById('orderManage');
+        var submenu = document.getElementById('submenu');
+
+        orderManage.addEventListener('click', function() {
+            if (submenu.style.display === 'grid') {
+                submenu.style.display = 'none';
+            } else {
+                submenu.style.display = 'grid';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!orderManage.contains(e.target) && !submenu.contains(e.target)) {
+                submenu.style.display = 'none';
+            }
+        });
+
+        // 列宽拖拽
+        (function() {
+            var table = document.querySelector('table');
+            var cols = table.querySelectorAll('th');
+            var colGroup = document.createElement('colgroup');
+
+            cols.forEach(function(th) {
+                var handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                th.appendChild(handle);
+
+                var col = document.createElement('col');
+                col.style.width = th.offsetWidth + 'px';
+                colGroup.appendChild(col);
+
+                var startX, startWidth;
+
+                handle.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startX = e.clientX;
+                    startWidth = th.offsetWidth;
+                    handle.classList.add('active');
+
+                    function onMouseMove(e) {
+                        var newWidth = Math.max(50, startWidth + (e.clientX - startX));
+                        col.style.width = newWidth + 'px';
+                        th.style.minWidth = newWidth + 'px';
+                    }
+
+                    function onMouseUp() {
+                        handle.classList.remove('active');
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+            });
+
+            table.insertBefore(colGroup, table.firstChild);
+        })();
+
+        // ===== 新增弹窗 =====
+        let orgSeq = 2;
+
+        function openModal() {
+            document.getElementById('addModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').classList.remove('show');
+        }
+
+        // 点击遮罩关闭
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // 条件类型切换
+        function switchConditionType(btn) {
+            var tabs = btn.parentNode.querySelectorAll('.ct-tab');
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+
+            var type = btn.getAttribute('data-type');
+            document.getElementById('conditionChannelProduct').classList.toggle('active', type === 'channelProduct');
+            document.getElementById('conditionChannelBrand').classList.toggle('active', type === 'channelBrand');
+            document.getElementById('conditionProduct').classList.toggle('active', type === 'product');
+            document.getElementById('conditionBrand').classList.toggle('active', type === 'brand');
+            document.getElementById('conditionOrder').classList.toggle('active', type === 'order');
+        }
+
+        // 添加渠道+商品条件
+        function addChannelProductCondition() {
+            var list = document.getElementById('channelProductList');
+            var div = document.createElement('div');
+            div.className = 'condition-item';
+            div.innerHTML = '<label>三级来源</label>' +
+                '<select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>' +
+                '<label>商品编码</label>' +
+                '<input type="text" placeholder="请输入商品编码" style="width:180px;">' +
+                '<button class="remove-condition" onclick="removeCondition(this)">✕</button>';
+            list.appendChild(div);
+        }
+
+        // 添加渠道+品牌条件
+        function addChannelBrandCondition() {
+            var list = document.getElementById('channelBrandList');
+            var div = document.createElement('div');
+            div.className = 'condition-item';
+            div.innerHTML = '<label>渠道</label>' +
+                '<select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>' +
+                '<label>品牌</label>' +
+                '<select><option>耐克</option><option>阿迪达斯</option><option>李宁</option><option>安踏</option><option>新百伦</option></select>' +
+                '<button class="remove-condition" onclick="removeCondition(this)">✕</button>';
+            list.appendChild(div);
+        }
+
+        // 添加商品条件
+        function addProductCondition() {
+            var list = document.getElementById('productList');
+            var div = document.createElement('div');
+            div.className = 'condition-item';
+            div.innerHTML = '<label>商品编码</label>' +
+                '<input type="text" placeholder="请输入商品编码" style="width:220px;">' +
+                '<button class="remove-condition" onclick="removeCondition(this)">✕</button>';
+            list.appendChild(div);
+        }
+
+        // 添加品牌条件
+        function addBrandCondition() {
+            var list = document.getElementById('brandList');
+            var div = document.createElement('div');
+            div.className = 'condition-item';
+            div.innerHTML = '<label>品牌</label>' +
+                '<select><option>耐克</option><option>阿迪达斯</option><option>李宁</option><option>安踏</option><option>新百伦</option></select>' +
+                '<button class="remove-condition" onclick="removeCondition(this)">✕</button>';
+            list.appendChild(div);
+        }
+
+        // 添加平台订单编码条件
+        function addOrderCondition() {
+            var list = document.getElementById('orderConditionList');
+            var div = document.createElement('div');
+            div.className = 'condition-item';
+            div.innerHTML = '<label>平台</label>' +
+                '<select><option>得物</option><option>天猫</option><option>京东</option><option>抖音</option><option>拼多多</option><option>小红书</option><option>唯品会</option><option>快手</option></select>' +
+                '<label>订单编码</label>' +
+                '<input type="text" placeholder="请输入平台订单编码" style="width:220px;">' +
+                '<button class="remove-condition" onclick="removeCondition(this)">✕</button>';
+            list.appendChild(div);
+        }
+
+        // 删除条件行
+        function removeCondition(btn) {
+            btn.parentElement.remove();
+        }
+
+        // 添加机构行
+        function addOrg() {
+            orgSeq++;
+            var tbody = document.getElementById('orgTableBody');
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + orgSeq + '</td>' +
+                '<td><input type="text" placeholder="请输入机构编码"></td>' +
+                '<td><input type="text" placeholder="请输入机构名称"></td>' +
+                '<td><select><option value="1">1（最高）</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td>' +
+                '<td><button class="remove-org" onclick="removeOrg(this)">✕</button></td>';
+            tbody.appendChild(tr);
+        }
+
+        // 删除机构行
+        function removeOrg(btn) {
+            var tr = btn.closest('tr');
+            tr.remove();
+            renumberOrgs();
+        }
+
+        function renumberOrgs() {
+            var rows = document.querySelectorAll('#orgTableBody tr');
+            rows.forEach(function(row, i) {
+                row.querySelector('td').textContent = i + 1;
+            });
+            orgSeq = rows.length;
+        }
+
+        // 派单对象类型切换
+        function switchOrgType(btn) {
+            var tabs = btn.parentElement.querySelectorAll('.ct-tab');
+            tabs.forEach(function(t) { t.classList.remove('active'); });
+            btn.classList.add('active');
+
+            var target = btn.getAttribute('data-target');
+            document.getElementById('orgPanel').classList.toggle('active', target === 'orgPanel');
+            document.getElementById('hgPanel').classList.toggle('active', target === 'hgPanel');
+            document.getElementById('cityPanel').classList.toggle('active', target === 'cityPanel');
+            document.getElementById('vwPanel').classList.toggle('active', target === 'vwPanel');
+        }
+
+        // 虚仓序号
+        var vwSeq = 1;
+
+        // 添加虚仓行
+        function addVw() {
+            vwSeq++;
+            var tbody = document.getElementById('vwTableBody');
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + vwSeq + '</td>' +
+                '<td><input type="text" placeholder="请输入虚仓编码"></td>' +
+                '<td><input type="text" placeholder="请输入虚仓名称"></td>' +
+                '<td><select><option value="1">1（最高）</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td>' +
+                '<td><button class="remove-vw" onclick="removeVw(this)">✕</button></td>';
+            tbody.appendChild(tr);
+        }
+
+        // 删除虚仓行
+        function removeVw(btn) {
+            var tr = btn.closest('tr');
+            tr.remove();
+            renumberVws();
+        }
+
+        function renumberVws() {
+            var rows = document.querySelectorAll('#vwTableBody tr');
+            rows.forEach(function(row, i) {
+                row.querySelector('td').textContent = i + 1;
+            });
+            vwSeq = rows.length;
+        }
+
+        // 货管序号
+        var hgSeq = 1;
+
+        function addHg() {
+            hgSeq++;
+            var tbody = document.getElementById('hgTableBody');
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + hgSeq + '</td>' +
+                '<td><input type="text" placeholder="请输入货管编码"></td>' +
+                '<td><input type="text" placeholder="请输入货管名称"></td>' +
+                '<td><select><option value="1">1（最高）</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td>' +
+                '<td><button class="remove-hg" onclick="removeHg(this)">✕</button></td>';
+            tbody.appendChild(tr);
+        }
+
+        function removeHg(btn) {
+            var tr = btn.closest('tr');
+            tr.remove();
+            renumberHgs();
+        }
+
+        function renumberHgs() {
+            var rows = document.querySelectorAll('#hgTableBody tr');
+            rows.forEach(function(row, i) {
+                row.querySelector('td').textContent = i + 1;
+            });
+            hgSeq = rows.length;
+        }
+
+        // 城市序号
+        var citySeq = 1;
+
+        function addCity() {
+            citySeq++;
+            var tbody = document.getElementById('cityTableBody');
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + citySeq + '</td>' +
+                '<td><input type="text" placeholder="请输入城市名称"></td>' +
+                '<td><select><option value="1">1（最高）</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></td>' +
+                '<td><button class="remove-city" onclick="removeCity(this)">✕</button></td>';
+            tbody.appendChild(tr);
+        }
+
+        function removeCity(btn) {
+            var tr = btn.closest('tr');
+            tr.remove();
+            renumberCitys();
+        }
+
+        function renumberCitys() {
+            var rows = document.querySelectorAll('#cityTableBody tr');
+            rows.forEach(function(row, i) {
+                row.querySelector('td').textContent = i + 1;
+            });
+            citySeq = rows.length;
+        }
+
+        // 保存规则
+        function saveRule() {
+            var name = document.getElementById('modalRuleName').value.trim();
+            var startTime = document.getElementById('modalStartTime').value.replace('T', ' ') + ':00';
+            var endTime = document.getElementById('modalEndTime').value.replace('T', ' ') + ':00';
+
+            if (!name) { alert('请输入规则名称'); return; }
+            if (!startTime || !endTime) { alert('请选择生效时间段'); return; }
+
+            // 获取当前激活的条件类型
+            var activeCondTab = document.querySelector('.form-section .condition-type-switch .ct-tab.active');
+            var condition = activeCondTab ? activeCondTab.textContent : '渠道+商品';
+
+            // 获取当前激活的目标类型
+            var activeTargetTab = document.querySelector('.form-section:last-of-type .condition-type-switch .ct-tab.active');
+            var target = activeTargetTab ? activeTargetTab.textContent : '机构';
+
+            // 生成编码
+            var now = new Date();
+            var dateStr = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+            var seq = String(ruleData.length + 1).padStart(4, '0');
+            var code = 'SZ' + dateStr + seq;
+
+            ruleData.unshift({
+                code: code,
+                name: name,
+                startTime: startTime,
+                endTime: endTime,
+                status: '启用',
+                condition: condition,
+                target: target,
+                creator: 'zhou.c',
+                createTime: now.toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-'),
+                modifier: 'zhou.c',
+                modifyTime: now.toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+            });
+
+            closeModal();
+            renderTable(ruleData);
+
+            // 重置表单
+            document.getElementById('modalRuleName').value = '';
+            document.getElementById('modalStartTime').value = '';
+            document.getElementById('modalEndTime').value = '';
+        }
+    </script>
+</body>
+</html>
